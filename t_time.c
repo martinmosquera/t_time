@@ -103,8 +103,13 @@ void borrar(Table table,Time key){
     Nodo* aux = table->inicio;
     Nodo* ant;
     int timeOld =  (aux->key.H*3600)+(aux->key.M*60)+aux->key.S;
+    int timemax = (table->max->key.H*3600)+(table->max->key.M*60)+(table->max->key.S);
     int timeNew = (key->H*3600)+(key->M*60)+key->S;
-    while((timeOld != timeNew) && aux != NULL){
+    if(timeNew < timeOld || timeNew > timemax){
+        printf("\n\tO valor %d:%d:%d nao foi encontrado na tabela\n",key->H,key->M,key->S);
+        return;
+    }
+    while((timeOld < timeNew) && aux != NULL){
         ant = aux;
         aux = aux->next;
         if(aux != NULL)
@@ -169,15 +174,19 @@ time_k floor(Table table,Time key){
     Nodo* ant;   
     int timeOld =  (aux->key.H*3600)+(aux->key.M*60)+aux->key.S;
     int timeNew = (key->H*3600)+(key->M*60)+key->S;
-    while((timeOld != timeNew) && aux != NULL){
+    while((timeOld < timeNew) && aux != NULL){
         ant = aux;
         aux = aux->next;
         if(aux != NULL)
         timeOld =  (aux->key.H*3600)+(aux->key.M*60)+aux->key.S;
     }
-    if(aux == NULL)
+    if(aux == NULL){
         printf("\n\tO valor %d:%d:%d nao foi encontrado\n",key->H,key->M,key->S);
-    else return aux->ant->key;
+        time_k timeout;
+        timeout.H = -1;
+        return timeout;
+        }
+    else return ant->key;
 
 }
 
@@ -187,15 +196,89 @@ time_k ceiling(Table table,Time key){
     Nodo* ant;   
     int timeOld =  (aux->key.H*3600)+(aux->key.M*60)+aux->key.S;
     int timeNew = (key->H*3600)+(key->M*60)+key->S;
-    while((timeOld != timeNew) && aux != NULL){
+    while((timeOld < timeNew) && aux != NULL){
         ant = aux;
         aux = aux->next;
         if(aux != NULL)
         timeOld =  (aux->key.H*3600)+(aux->key.M*60)+aux->key.S;
     }
     if(aux == NULL){
-        printf("\n\tO valor %d:%d:%d nao foi encontrado\n",key->H,key->M,key->S);
-    }else return aux->next->key;
+        printf("\n\tNao tem valores maiores de %d:%d:%d\n",key->H,key->M,key->S);
+        time_k timeout;
+        timeout.H = -1;
+        return timeout;
+    }else return aux->key;
+}
+
+int rank(Table table,Time key){
+    if(table->count == 0) return 0;
+     Nodo* aux = table->inicio;
+    Nodo* ant;   
+    int count = 0;
+    int timeOld =  (aux->key.H*3600)+(aux->key.M*60)+aux->key.S;
+    int timeNew = (key->H*3600)+(key->M*60)+key->S;
+    while((timeOld < timeNew) && aux != NULL){
+        ant = aux;
+        aux = aux->next;
+        if(aux != NULL)
+        timeOld =  (aux->key.H*3600)+(aux->key.M*60)+aux->key.S;
+        count++;
+    }
+    return count;
+}
+
+time_k select(Table table,int k){
+
+    if(table->count < k){
+        printf("\n\tO dado sae fora da dimensao da tabela %d dados | Solicitado indice: %d\n",table->count,k);
+        time_k timeout;
+        timeout.H = -1;
+        return timeout;
+    }
+    Nodo* aux = table->inicio; 
+    int count = 0;
+    while((count < k) && aux != NULL){
+        aux = aux->next;
+        count++;
+    }
+    return aux->key;
+}
+
+void delete_min(Table table){
+    if(table ==  NULL) return;
+    table->inicio = table->inicio->next;
+    table->inicio->ant = NULL;
+    table->count--;
+}
+
+void delete_max(Table table){
+    if(table ==  NULL) return;
+    table->max = table->max->ant;
+    table->max->next = NULL;
+    table->count--;
+}
+
+int size_range(Table table,time_k lo, time_k hi){
+    
+    Nodo* aux = table->inicio;
+    Nodo* ant;
+    int timemin = (aux->key.H*3600)+(aux->key.M*60)+aux->key.S;
+    int timemax =  (table->max->key.H*3600)+(table->max->key.M*60)+table->max->key.S;
+    int timelo = (lo.H*3600)+(lo.M*60)+lo.S;
+    int timehi = (hi.H*3600)+(hi.M*60)+hi.S;
+    if(timelo > timemax || timehi < timemin){
+        printf("\n\tNao tem dados no rango informado\n");
+        return -1;
+    }
+    int count = 0;
+     while(timemin < timehi && timelo < timemax && aux != NULL){
+        ant = aux;
+        aux = aux->next;
+        if(aux != NULL)
+        timemin =  (aux->key.H*3600)+(aux->key.M*60)+aux->key.S;
+        count++;
+    }
+    return count;
 }
 
 void print_table(Table table){

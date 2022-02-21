@@ -51,17 +51,17 @@ time_k floor(Table table,Time key);
 
 time_k ceiling(Table table,Time key);
 
-int rank(time_t key);
+int rank(Table table,Time key);
 
-time_t select(int k);
+time_k select(Table table,int k);
 
-void delete_min(Table table,time_t key);
+void delete_min(Table table);
 
-void delete_max(Table table,time_t key);
+void delete_max(Table table);
 
-int size_range(time_t lo, time_t hi);
+int size_range(Table table,time_k lo, time_k hi);
 
-time_t * keys(time_t lo, time_t hi);
+time_k* keys(Table table,time_k lo, time_k hi);
 
 void print_table(Table table);
 
